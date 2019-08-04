@@ -117,15 +117,22 @@ public class TaskController {
     private void updateTask(Long id, Task temporaryTask) {
         entityManager.getTransaction().begin();
         Task task = entityManager.find(Task.class, id);
-        if(temporaryTask.getDescription() != null)  task.setDescription(temporaryTask.getDescription());
+        if (temporaryTask.getDescription() != null) {
+            task.setDescription(temporaryTask.getDescription());
+        }
 
-        if(temporaryTask.getCategory() != null) task.setCategory(temporaryTask.getCategory());
+        if (temporaryTask.getCategory() != null) {
+            task.setCategory(temporaryTask.getCategory());
+        }
 
         task.setReady(temporaryTask.isReady());
 
-
-        if(temporaryTask.getStartDate() != null) task.setStartDate(temporaryTask.getStartDate());
-        if(temporaryTask.getFinishDate() != null) task.setFinishDate(temporaryTask.getFinishDate());
+        if (temporaryTask.getStartDate() != null) {
+            task.setStartDate(temporaryTask.getStartDate());
+        }
+        if (temporaryTask.getFinishDate() != null) {
+            task.setFinishDate(temporaryTask.getFinishDate());
+        }
 
         entityManager.persist(task);
         entityManager.getTransaction().commit();
@@ -178,7 +185,7 @@ public class TaskController {
             orderBy = "t.description";
         } else if (userInput.equals("K")) {
             orderBy = "t.category";
-        }else if(userInput.equals("D")){
+        } else if (userInput.equals("D")) {
             orderBy = "t.deadline";
         } else {
             System.out.println("Nieprawidłowa wartość");
@@ -197,14 +204,13 @@ public class TaskController {
         String fontColor = ConsoleColors.RESET;
 
         for (Task task : resultList) {
-            if(task.getDeadline().isBefore(LocalDate.now())){
+            if (task.getDeadline().isBefore(LocalDate.now())) {
                 fontColor = ConsoleColors.RED;
-            } else{
+            } else {
                 fontColor = ConsoleColors.GREEN;
             }
 
-
-            System.out.println(fontColor+task+ConsoleColors.RESET);
+            System.out.println(fontColor + task + ConsoleColors.RESET);
         }
 
     }

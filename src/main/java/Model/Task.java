@@ -30,7 +30,7 @@ public class Task {
     public Task() {
     }
 
-    public Task(String description, Category category, boolean isReady,  LocalDate deadline) {
+    public Task(String description, Category category, boolean isReady, LocalDate deadline) {
         this.description = description;
         this.category = category;
         this.deadline = deadline;
@@ -95,7 +95,7 @@ public class Task {
 
     @Override
     public String toString() {
-        return  "id=" + id +
+        return "id=" + id +
                 ", description='" + description + '\'' +
                 ", category=" + category +
                 ", deadline=" + deadline +
