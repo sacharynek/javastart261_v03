@@ -50,7 +50,7 @@ public class TaskController {
                     handleDisplayAllSorted();
                     break;
                 case "4":
-                    System.out.println(ConsoleColors.CYAN + "podaj ID zadania" + ConsoleColors.Reset);
+                    System.out.println(ConsoleColors.CYAN + "podaj ID zadania" + ConsoleColors.RESET);
                     updateTask(scanner.nextLong(), displayMarkAsDoneText());
                     break;
                 case "5":
@@ -74,36 +74,41 @@ public class TaskController {
         Task temporaryTask = new Task();
 
         System.out.println("podaj nowy opis. Wciśnij Enter aby zostawić jak jest");
-        String newDescription = scanner.next();
-        newDescription = newDescription.equals("") ? temporaryTask.getDescription() : scanner.nextLine();
+        scanner.next();
+        String newDescription = scanner.nextLine();
+        newDescription = newDescription.equals("") ? null : newDescription;
         temporaryTask.setDescription(newDescription);
 
         System.out.println("podaj kategorię.  Wciśnij Enter aby zostawić jak jest");
-        String newCategory = scanner.next();
-        Category category = newCategory.equals("") ? temporaryTask.getCategory() : Category.valueOf(scanner.nextLine());
+
+        for (Category category : Category.values()) {
+            System.out.println(category);
+        }
+
+        String newCategory = scanner.nextLine();
+        Category category = newCategory.equals("") ? null : Category.valueOf(newCategory);
         temporaryTask.setCategory(category);
 
         System.out.println("Czy zadanie jest gotowe? true/false?");
-        boolean isReady = scanner.nextBoolean();
+        boolean isReady = scanner.nextLine().toLowerCase().equals("true");
         temporaryTask.setReady(isReady);
 
-        System.out.println("podaj datę rozpoczęcia wykonywania zadania?. Wciśnij Enter aby zostawić jak jest");
-        LocalDate startDate = LocalDate.parse(scanner.nextLine());
+        System.out.println("podaj datę rozpoczęcia wykonywania zadania?. RRRR-MM-DD - Wciśnij Enter aby zostawić jak jest");
+        String startDateString = scanner.nextLine();
+        LocalDate startDate = startDateString.equals("") ? null : LocalDate.parse(startDateString);
         temporaryTask.setStartDate(startDate);
 
-        System.out.println("podaj datę zakończenia wykonywania zadania?. Wciśnij Enter aby zostawić jak jest");
-        LocalDate finishDate = LocalDate.parse(scanner.nextLine());
+        System.out.println("podaj datę zakończenia wykonywania zadania?. RRRR-MM-DD - Wciśnij Enter aby zostawić jak jest");
+        String finishDateString = scanner.nextLine();
+        LocalDate finishDate = finishDateString.equals("") ? null : LocalDate.parse(finishDateString);
         temporaryTask.setFinishDate(finishDate);
-
         return temporaryTask;
     }
 
     public Task displayMarkAsDoneText() {
         Task temporaryTask = new Task();
 
-        System.out.println("Czy zadanie jest gotowe? true/false?");
-        boolean isReady = scanner.nextBoolean();
-        temporaryTask.setReady(isReady);
+        temporaryTask.setReady(true);
 
         return temporaryTask;
     }
@@ -112,12 +117,15 @@ public class TaskController {
     private void updateTask(Long id, Task temporaryTask) {
         entityManager.getTransaction().begin();
         Task task = entityManager.find(Task.class, id);
+        if(temporaryTask.getDescription() != null)  task.setDescription(temporaryTask.getDescription());
 
-        task.setDescription(temporaryTask.getDescription());
-        task.setCategory(temporaryTask.getCategory());
+        if(temporaryTask.getCategory() != null) task.setCategory(temporaryTask.getCategory());
+
         task.setReady(temporaryTask.isReady());
-        task.setStartDate(temporaryTask.getStartDate());
-        task.setFinishDate(temporaryTask.getFinishDate());
+
+
+        if(temporaryTask.getStartDate() != null) task.setStartDate(temporaryTask.getStartDate());
+        if(temporaryTask.getFinishDate() != null) task.setFinishDate(temporaryTask.getFinishDate());
 
         entityManager.persist(task);
         entityManager.getTransaction().commit();
@@ -161,15 +169,17 @@ public class TaskController {
 
     private void handleDisplayAllSorted() {
 
-        System.out.println("Po czym sortować? N - opis, C - kategoria");
+        System.out.println("Po czym sortować? O - opis, K - kategoria, D- Deadline");
         String userInput = scanner.nextLine();
 
         String orderBy = "";
 
-        if (userInput.equals("N")) {
+        if (userInput.equals("O")) {
             orderBy = "t.description";
-        } else if (userInput.equals("C")) {
+        } else if (userInput.equals("K")) {
             orderBy = "t.category";
+        }else if(userInput.equals("D")){
+            orderBy = "t.deadline";
         } else {
             System.out.println("Nieprawidłowa wartość");
             return;
@@ -182,11 +192,19 @@ public class TaskController {
 
 
     private void handleDisplayAll(String sortBy, boolean isReady) {
-        TypedQuery<Task> query = entityManager.createQuery("select t FROM Task t where t.isReady = false " + sortBy, Task.class);
+        TypedQuery<Task> query = entityManager.createQuery("select t FROM Task t where t.isReady = " + isReady + sortBy, Task.class);
         List<Task> resultList = query.getResultList();
+        String fontColor = ConsoleColors.RESET;
 
         for (Task task : resultList) {
-            System.out.println(task);
+            if(task.getDeadline().isBefore(LocalDate.now())){
+                fontColor = ConsoleColors.RED;
+            } else{
+                fontColor = ConsoleColors.GREEN;
+            }
+
+
+            System.out.println(fontColor+task+ConsoleColors.RESET);
         }
 
     }
